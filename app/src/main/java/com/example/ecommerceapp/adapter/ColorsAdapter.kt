@@ -14,8 +14,8 @@ class ColorsAdapter : RecyclerView.Adapter<ColorsAdapter.ColorViewHolder>() {
 
     inner class ColorViewHolder(val binding: RowColorRvBinding) :
         RecyclerView.ViewHolder(binding.root)
-
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ColorViewHolder {
+        println("onCreateViewHolder")
         val binding = RowColorRvBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return ColorViewHolder(binding)
     }
@@ -23,6 +23,7 @@ class ColorsAdapter : RecyclerView.Adapter<ColorsAdapter.ColorViewHolder>() {
     override fun onBindViewHolder(holder: ColorViewHolder, position: Int) {
         val color = colors.get(position)
         val imageDrawable = ColorDrawable(color)
+        println("color : "+color)
 
         holder.binding.imageColor.setImageDrawable(imageDrawable)
         if (position == selectedPosition){
@@ -51,5 +52,5 @@ class ColorsAdapter : RecyclerView.Adapter<ColorsAdapter.ColorViewHolder>() {
         return colors.size
     }
 
-    val onItemClick : ((Int) -> Unit)? = null
+    var onItemClick : ((Int) -> Unit)? = null
 }

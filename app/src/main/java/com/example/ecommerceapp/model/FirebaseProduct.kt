@@ -1,6 +1,10 @@
 package com.example.ecommerceapp.model
 
-class FirebaseProduct {
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
+
+@Parcelize
+class FirebaseProduct() : Parcelable{
     var id: String? = null
     var brand: String? = null
     var name: String? = null
@@ -13,8 +17,8 @@ class FirebaseProduct {
     var stock: Int? = null
     var colors: List<Int>? = null
     var imageUrls: List<String>? = null
+    var allSizes: List<String>? = null
 
-    constructor()
     constructor(
         id: String? = null,
         brand: String? = null,
@@ -27,9 +31,9 @@ class FirebaseProduct {
         rating: Double? = null,
         stock: Int? = null,
         colors: List<Int>? = null,
-        imageUrls: List<String>? = null
-
-    ){
+        imageUrls: List<String>? = null,
+        allSizes: List<String>? = null
+    ) : this() {
         this.id = id
         this.brand = brand
         this.name = name
@@ -42,5 +46,6 @@ class FirebaseProduct {
         this.stock = stock
         this.colors = colors
         this.imageUrls = imageUrls
+        this.allSizes = allSizes
     }
 }

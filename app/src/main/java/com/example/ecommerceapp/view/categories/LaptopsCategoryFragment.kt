@@ -14,13 +14,19 @@ import com.example.ecommerceapp.adapter.BestProductsAdapter
 import com.example.ecommerceapp.databinding.FragmentLaptopsCategoryBinding
 import com.example.ecommerceapp.model.FirebaseProduct
 import com.example.ecommerceapp.util.Status
-import com.example.ecommerceapp.viewmodel.category.LaptopsCategoryViewModel
+import com.example.ecommerceapp.viewmodel.CategoryViewModel
+import com.example.ecommerceapp.viewmodel.factory.CategoryViewModelFactory
+import com.google.firebase.firestore.FirebaseFirestore
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
-@AndroidEntryPoint
+@AndroidEntryPointz
 class LaptopsCategoryFragment : Fragment() {
 
-    private lateinit var viewModel: LaptopsCategoryViewModel
+    @Inject
+    lateinit var fireStore : FirebaseFirestore
+    private lateinit var viewModel: CategoryViewModel
+
     private lateinit var binding: FragmentLaptopsCategoryBinding
     private lateinit var bestProductAdapter: BestProductsAdapter
 
@@ -29,7 +35,11 @@ class LaptopsCategoryFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentLaptopsCategoryBinding.inflate(inflater, container, false)
-        viewModel = ViewModelProvider(this).get(LaptopsCategoryViewModel::class.java)
+        viewModel = ViewModelProvider(this,
+            CategoryViewModelFactory(
+                fireStore, "laptops"
+            )
+        ).get(CategoryViewModel::class.java)
         return binding.root
     }
 
@@ -38,7 +48,7 @@ class LaptopsCategoryFragment : Fragment() {
         binding.nestedScrollMainCategory.setOnScrollChangeListener(
             NestedScrollView.OnScrollChangeListener{ v, _, scrollY, _, _->
                 if (v.getChildAt(0).bottom <= v.height + scrollY){
-                    viewModel.getProductsFromFirebase()
+                    viewModel.getProductsByCategory()
                 }
             }
         )

@@ -1,9 +1,12 @@
 package com.example.ecommerceapp.util
 
+import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import androidx.fragment.app.Fragment
 import com.example.ecommerceapp.R
+import com.example.ecommerceapp.view.ShoppingActivity
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 
@@ -30,4 +33,15 @@ fun Fragment.setupBottomSheetDialog(
     buttonCancel.setOnClickListener {
         dialog.dismiss()
     }
+}
+fun Fragment.showBottomNavigation(show : Boolean){
+    val bottomNavigationView = (activity as ShoppingActivity).findViewById<BottomNavigationView>(
+        R.id.nav_view
+    )
+    if (show){
+        bottomNavigationView.visibility = View.VISIBLE
+    }else{
+        bottomNavigationView.visibility = View.GONE
+    }
+
 }

@@ -9,7 +9,11 @@
         android:id="@+id/navigation_home"
         android:name="com.example.ecommerceapp.view.HomeFragment"
         android:label="@string/title_home"
-        tools:layout="@layout/fragment_home" />
+        tools:layout="@layout/fragment_home" >
+        <action
+            android:id="@+id/action_navigation_home_to_productFragment"
+            app:destination="@id/productFragment" />
+    </fragment>
 
     <fragment
         android:id="@+id/navigation_dashboard"
@@ -36,4 +40,13 @@
         android:name="com.example.ecommerceapp.view.CreateProductFragment"
         android:label="fragment_create_product"
         tools:layout="@layout/fragment_create_product" />
+    <fragment
+        android:id="@+id/productFragment"
+        android:name="com.example.ecommerceapp.view.ProductFragment"
+        tools:layout="@layout/fragment_product" >
+
+        <argument
+            android:name="product"
+            app:argType="com.example.ecommerceapp.model.FirebaseProduct" />
+    </fragment>
 </navigation>

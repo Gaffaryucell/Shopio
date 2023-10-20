@@ -6,7 +6,6 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.example.ecommerceapp.viewmodel.category.GroceriesCategoryViewModel
 import android.annotation.SuppressLint
 import androidx.core.widget.NestedScrollView
 import androidx.lifecycle.Observer
@@ -15,12 +14,18 @@ import com.example.ecommerceapp.adapter.BestProductsAdapter
 import com.example.ecommerceapp.databinding.FragmentGroceriesCategoryBinding
 import com.example.ecommerceapp.model.FirebaseProduct
 import com.example.ecommerceapp.util.Status
+import com.example.ecommerceapp.viewmodel.CategoryViewModel
+import com.example.ecommerceapp.viewmodel.factory.CategoryViewModelFactory
+import com.google.firebase.firestore.FirebaseFirestore
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class GroceriesCategoryFragment : Fragment() {
 
-    private lateinit var viewModel: GroceriesCategoryViewModel
+    @Inject
+    lateinit var fireStore : FirebaseFirestore
+    private lateinit var viewModel: CategoryViewModel
     private lateinit var binding: FragmentGroceriesCategoryBinding
     private lateinit var bestProductAdapter: BestProductsAdapter
 
@@ -29,7 +34,11 @@ class GroceriesCategoryFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentGroceriesCategoryBinding.inflate(inflater, container, false)
-        viewModel = ViewModelProvider(this).get(GroceriesCategoryViewModel::class.java)
+        viewModel = ViewModelProvider(this,
+            CategoryViewModelFactory(
+                fireStore, "groceries"
+            )
+        ).get(CategoryViewModel::class.java)
         return binding.root
     }
 
@@ -38,7 +47,7 @@ class GroceriesCategoryFragment : Fragment() {
         binding.nestedScrollMainCategory.setOnScrollChangeListener(
             NestedScrollView.OnScrollChangeListener{ v, _, scrollY, _, _->
                 if (v.getChildAt(0).bottom <= v.height + scrollY){
-                    viewModel.getProductsFromFirebase()
+                    viewModel.getProductsByCategory()
                 }
             }
         )

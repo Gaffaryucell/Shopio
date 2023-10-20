@@ -2,39 +2,37 @@ package com.example.ecommerceapp.view.categories
 
 import android.annotation.SuppressLint
 import android.os.Bundle
-import android.view.GestureDetector
 import android.view.LayoutInflater
-import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
-import android.widget.LinearLayout
-import androidx.core.view.isVisible
 import androidx.core.widget.NestedScrollView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import androidx.navigation.Navigation
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.ecommerceapp.R
 import com.example.ecommerceapp.adapter.BestDealsAdapter
 import com.example.ecommerceapp.adapter.BestProductsAdapter
 import com.example.ecommerceapp.adapter.SpecialProductsAdapter
-import com.example.ecommerceapp.databinding.FragmentAccountBinding
 import com.example.ecommerceapp.databinding.FragmentMainCategoryBinding
 import com.example.ecommerceapp.model.FirebaseProduct
 import com.example.ecommerceapp.util.Status
-import com.example.ecommerceapp.view.AccountFragmentDirections
-import com.example.ecommerceapp.viewmodel.AccountViewModel
-import com.example.ecommerceapp.viewmodel.category.MainCategoryViewModel
+import com.example.ecommerceapp.viewmodel.CategoryViewModel
+import com.example.ecommerceapp.viewmodel.factory.CategoryViewModelFactory
+import com.google.firebase.firestore.FirebaseFirestore
 import dagger.hilt.android.AndroidEntryPoint
-import java.lang.Math.abs
-
+import javax.inject.Inject
 
 
 @AndroidEntryPoint
 class MainCategoryFragment : Fragment(){
-    private lateinit var viewModel: MainCategoryViewModel
+
+    @Inject
+    lateinit var fireStore : FirebaseFirestore
+    private lateinit var viewModel: CategoryViewModel
+
     private lateinit var binding : FragmentMainCategoryBinding
     private lateinit var bestDealsAdapter: BestDealsAdapter
     private lateinit var specialProductsAdapter: SpecialProductsAdapter
@@ -45,7 +43,11 @@ class MainCategoryFragment : Fragment(){
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentMainCategoryBinding.inflate(inflater,container,false)
-        viewModel = ViewModelProvider(this).get(MainCategoryViewModel::class.java)
+        viewModel = ViewModelProvider(this,
+            CategoryViewModelFactory(
+                fireStore, "main"
+            )
+        ).get(CategoryViewModel::class.java)
         return binding.root
     }
 
@@ -53,11 +55,12 @@ class MainCategoryFragment : Fragment(){
     @SuppressLint("ClickableViewAccessibility")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
+        viewModel.getAllProductsForMainCategory()
+        viewModel.getOfferProductsForMainCategory()
         binding.nestedScrollMainCategory.setOnScrollChangeListener(
             NestedScrollView.OnScrollChangeListener{ v,_,scrollY,_,_->
                 if (v.getChildAt(0).bottom <= v.height + scrollY){
-                    viewModel.getProductsFromFirebase()
+                    viewModel.getAllProductsForMainCategory()
                 }
             }
         )
@@ -65,7 +68,22 @@ class MainCategoryFragment : Fragment(){
         setupBestDealsRv()
         observeLiveData()
         setupBestProductRv()
-    }
+
+        try {
+            specialProductsAdapter.onClick = {
+                val b = Bundle().apply {
+                    putParcelable("prod      uct",it)
+                }
+                findNavController().navigate(
+                    R.id.action_navigation_home_to_productFragment,
+                    b
+                )
+            }
+
+        }catch (e : Exception){
+            println("error : "+e.localizedMessage)
+        }
+     }
     @SuppressLint("NotifyDataSetChanged")
     private fun observeLiveData(){
         viewModel.productMessage.observe(viewLifecycleOwner, Observer {
@@ -81,8 +99,8 @@ class MainCategoryFragment : Fragment(){
                 }
             }
         })
-        viewModel.specialProducts.observe(viewLifecycleOwner, Observer {
-           setDataToLists(it)
+        viewModel.products.observe(viewLifecycleOwner, Observer {
+            setDataToLists(it)
         })
     }
 
