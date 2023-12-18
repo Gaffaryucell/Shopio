@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
@@ -15,10 +16,15 @@ import com.example.ecommerceapp.adapter.ColorsAdapter
 import com.example.ecommerceapp.adapter.SizesAdapter
 import com.example.ecommerceapp.adapter.ViewPager2Images
 import com.example.ecommerceapp.databinding.FragmentProductBinding
+import com.example.ecommerceapp.util.Status
 import com.example.ecommerceapp.viewmodel.ProductDetailsFragment2ViewModel
+import com.example.ecommerceapp.viewmodel.ProductDetailsViewModel
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class ProductFragment : Fragment() {
     private lateinit var binding : FragmentProductBinding
+    private lateinit var viewModel : ProductDetailsViewModel
     private val viewPager2Adapter by lazy { ViewPager2Images() }
     private val colorAdapter = ColorsAdapter()
     private val sizesAdapter = SizesAdapter()
@@ -32,13 +38,13 @@ class ProductFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentProductBinding.inflate(inflater,container,false)
+        viewModel = ViewModelProvider(this).get(ProductDetailsViewModel::class.java)
         return binding.root
     }
 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
         val product = args.product
 
         setupViewpager()
@@ -50,6 +56,10 @@ class ProductFragment : Fragment() {
         binding.imageClose.setOnClickListener {
             findNavController().navigateUp()
         }
+        binding.buttonAddToCart.setOnClickListener{
+            val quantity = 1
+            viewModel.addProductIntoCard(product, quantity,selectedSize,selectedColor)
+        }
 
         sizesAdapter.onItemClick = {
             selectedSize = it
@@ -59,8 +69,7 @@ class ProductFragment : Fragment() {
             selectedColor = it
         }
 
-        binding.buttonAddToCart.setOnClickListener {
-        }
+
 
 
 
@@ -83,7 +92,15 @@ class ProductFragment : Fragment() {
     }
 
     private fun observeLiveData(){
+        viewModel.addCardMessage.observe(viewLifecycleOwner, Observer {
+            when(it.status){
+                Status.ERROR   ->{}
 
+                Status.SUCCESS ->{}
+
+                Status.LOADING ->{}
+            }
+        })
     }
     private fun setupViewpager() {
         binding.apply {

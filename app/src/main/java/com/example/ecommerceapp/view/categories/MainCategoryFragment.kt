@@ -69,19 +69,32 @@ class MainCategoryFragment : Fragment(){
         observeLiveData()
         setupBestProductRv()
 
-        try {
-            specialProductsAdapter.onClick = {
-                val b = Bundle().apply {
-                    putParcelable("prod      uct",it)
-                }
-                findNavController().navigate(
-                    R.id.action_navigation_home_to_productFragment,
-                    b
-                )
+        specialProductsAdapter.onClick = {
+            val b = Bundle().apply {
+                putParcelable("product",it)
             }
-
-        }catch (e : Exception){
-            println("error : "+e.localizedMessage)
+            findNavController().navigate(
+                R.id.action_navigation_home_to_productFragment,
+                b
+            )
+        }
+        bestDealsAdapter.onClick = {
+            val b = Bundle().apply {
+                putParcelable("product",it)
+            }
+            findNavController().navigate(
+                R.id.action_navigation_home_to_productFragment,
+                b
+            )
+        }
+        bestProductAdapter.onClick = {
+            val b = Bundle().apply {
+                putParcelable("product",it)
+            }
+            findNavController().navigate(
+                R.id.action_navigation_home_to_productFragment,
+                b
+            )
         }
      }
     @SuppressLint("NotifyDataSetChanged")

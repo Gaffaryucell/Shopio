@@ -9,8 +9,13 @@ import android.view.ViewGroup
 import android.annotation.SuppressLint
 import androidx.core.widget.NestedScrollView
 import androidx.lifecycle.Observer
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.ecommerceapp.R
+import com.example.ecommerceapp.adapter.BestDealsAdapter
 import com.example.ecommerceapp.adapter.BestProductsAdapter
+import com.example.ecommerceapp.adapter.SpecialProductsAdapter
 import com.example.ecommerceapp.databinding.FragmentLaptopsCategoryBinding
 import com.example.ecommerceapp.model.FirebaseProduct
 import com.example.ecommerceapp.util.Status
@@ -20,7 +25,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
-@AndroidEntryPointz
+@AndroidEntryPoint
 class LaptopsCategoryFragment : Fragment() {
 
     @Inject
@@ -28,7 +33,8 @@ class LaptopsCategoryFragment : Fragment() {
     private lateinit var viewModel: CategoryViewModel
 
     private lateinit var binding: FragmentLaptopsCategoryBinding
-    private lateinit var bestProductAdapter: BestProductsAdapter
+    private var bestProductAdapter = BestProductsAdapter()
+    private var offerProductAdapter= SpecialProductsAdapter()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -45,6 +51,7 @@ class LaptopsCategoryFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
         binding.nestedScrollMainCategory.setOnScrollChangeListener(
             NestedScrollView.OnScrollChangeListener{ v, _, scrollY, _, _->
                 if (v.getChildAt(0).bottom <= v.height + scrollY){
@@ -52,6 +59,24 @@ class LaptopsCategoryFragment : Fragment() {
                 }
             }
         )
+        offerProductAdapter.onClick = {
+            val b = Bundle().apply {
+                putParcelable("product",it)
+            }
+            findNavController().navigate(
+                R.id.action_navigation_home_to_productFragment,
+                b
+            )
+        }
+        bestProductAdapter.onClick = {
+            val b = Bundle().apply {
+                putParcelable("product",it)
+            }
+            findNavController().navigate(
+                R.id.action_navigation_home_to_productFragment,
+                b
+            )
+        }
         observeLiveData()
         setupBestProductRv()
     }
@@ -80,11 +105,16 @@ class LaptopsCategoryFragment : Fragment() {
     private fun setDataToLists(data: List<FirebaseProduct>?) {
         bestProductAdapter.productList = data ?: arrayListOf()
         bestProductAdapter.notifyDataSetChanged()
+        offerProductAdapter.productList = data ?: arrayListOf()
+        offerProductAdapter.notifyDataSetChanged()
     }
 
     private fun setupBestProductRv() {
-        bestProductAdapter = BestProductsAdapter()
-        binding.laptopsRecyclerView.apply {
+        binding.rvBestDealsProducts.apply {
+            layoutManager = LinearLayoutManager(requireContext(),  LinearLayoutManager.HORIZONTAL, false)
+            adapter = bestProductAdapter
+        }
+        binding.rvBestProducts.apply {
             layoutManager = GridLayoutManager(requireContext(), 2, GridLayoutManager.VERTICAL, false)
             adapter = bestProductAdapter
         }

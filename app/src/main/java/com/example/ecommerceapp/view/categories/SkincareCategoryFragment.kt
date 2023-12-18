@@ -9,8 +9,13 @@ import android.view.ViewGroup
 import android.annotation.SuppressLint
 import androidx.core.widget.NestedScrollView
 import androidx.lifecycle.Observer
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.ecommerceapp.R
+import com.example.ecommerceapp.adapter.BestDealsAdapter
 import com.example.ecommerceapp.adapter.BestProductsAdapter
+import com.example.ecommerceapp.adapter.SpecialProductsAdapter
 import com.example.ecommerceapp.databinding.FragmentSkincareCategoryBinding
 import com.example.ecommerceapp.model.FirebaseProduct
 import com.example.ecommerceapp.util.Status
@@ -28,7 +33,8 @@ class SkincareCategoryFragment : Fragment() {
     private lateinit var viewModel: CategoryViewModel
 
     private lateinit var binding: FragmentSkincareCategoryBinding
-    private lateinit var bestProductAdapter: BestProductsAdapter
+    private var bestProductAdapter = BestProductsAdapter()
+    private var offerProductAdapter= SpecialProductsAdapter()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -52,6 +58,24 @@ class SkincareCategoryFragment : Fragment() {
                 }
             }
         )
+        offerProductAdapter.onClick = {
+            val b = Bundle().apply {
+                putParcelable("product",it)
+            }
+            findNavController().navigate(
+                R.id.action_navigation_home_to_productFragment,
+                b
+            )
+        }
+        bestProductAdapter.onClick = {
+            val b = Bundle().apply {
+                putParcelable("product",it)
+            }
+            findNavController().navigate(
+                R.id.action_navigation_home_to_productFragment,
+                b
+            )
+        }
         observeLiveData()
         setupBestProductRv()
     }
@@ -61,13 +85,13 @@ class SkincareCategoryFragment : Fragment() {
         viewModel.productMessage.observe(viewLifecycleOwner, Observer {
             when (it.status) {
                 Status.SUCCESS -> {
-                    binding.skincareProgressBar.visibility = View.GONE
+                    binding.laptopsProgressBar.visibility = View.GONE
                 }
                 Status.ERROR -> {
-                    binding.skincareProgressBar.visibility = View.GONE
+                    binding.laptopsProgressBar.visibility = View.GONE
                 }
                 Status.LOADING -> {
-                    binding.skincareProgressBar.visibility = View.VISIBLE
+                    binding.laptopsProgressBar.visibility = View.VISIBLE
                 }
             }
         })
@@ -83,10 +107,14 @@ class SkincareCategoryFragment : Fragment() {
     }
 
     private fun setupBestProductRv() {
-        bestProductAdapter = BestProductsAdapter()
-        binding.skincareRecyclerView.apply {
+        binding.rvBestDealsProducts.apply {
+            layoutManager = LinearLayoutManager(requireContext(),  LinearLayoutManager.HORIZONTAL, false)
+            adapter = bestProductAdapter
+        }
+        binding.rvBestProducts.apply {
             layoutManager = GridLayoutManager(requireContext(), 2, GridLayoutManager.VERTICAL, false)
             adapter = bestProductAdapter
         }
+
     }
 }

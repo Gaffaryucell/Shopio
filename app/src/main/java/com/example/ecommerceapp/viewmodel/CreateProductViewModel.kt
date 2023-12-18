@@ -13,7 +13,9 @@ import com.example.ecommerceapp.util.Util.DATABASE_URL
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
+import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.Observable
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -25,16 +27,16 @@ import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 import java.util.UUID
+import javax.inject.Inject
 
-class CreateProductViewModel : ViewModel() {
-    private val auth = FirebaseAuth.getInstance()
-    private val storageReference = FirebaseStorage.getInstance().reference
-    private val databaseReference: DatabaseReference =
-        FirebaseDatabase.getInstance(DATABASE_URL).reference
-    private val userTAbleRef =
-        databaseReference.child("users").child(auth.currentUser?.uid.toString())
-            .child("user_products")
-
+@HiltViewModel
+class CreateProductViewModel @Inject constructor(
+    private val fireStore : FirebaseFirestore,
+    private val auth : FirebaseAuth,
+    private val storage : FirebaseStorage
+) : ViewModel() {
+    private val storageReference = storage.reference
+    private val collection = fireStore.collection("users")
 
     private val _uploadProductStatus = MutableLiveData<Resource<String>>()
     val uploadProductStatus: LiveData<Resource<String>> = _uploadProductStatus
@@ -76,7 +78,7 @@ class CreateProductViewModel : ViewModel() {
                             val imageUrl = uri.toString()
                             newList.add(imageUrl)
                             if (i.contentEquals(bAList.last())) {
-                                uploadToFirebase(newList, product)
+                                uploadToFirebase(product)
                             }
                         }
                         .addOnFailureListener { exception ->
@@ -91,17 +93,16 @@ class CreateProductViewModel : ViewModel() {
                 }
             }
         }
+    private fun uploadToFirebase(product: FirebaseProduct) = viewModelScope.launch{
+        _uploadProductStatus.value = Resource.loading("loaded in Database")
 
-    private fun uploadToFirebase(newList: List<String>, product: FirebaseProduct) =
-        viewModelScope.launch {
-            product.imageUrls = newList
-            val productRef = databaseReference.child("products").child(product.id.toString())
-            productRef.setValue(product).addOnCompleteListener {
-                if (it.isSuccessful) {
-                    _uploadProductStatus.value = Resource.success("loaded in Database")
-                }
+        collection.document(auth.uid.toString())
+            .set(product)
+            .addOnSuccessListener {
+                _uploadProductStatus.value = Resource.success("loaded in Database")
             }
-            userTAbleRef.setValue(product)
+            .addOnFailureListener{ e ->
+                _uploadProductStatus.value = Resource.success("loaded in Database")
+            }
         }
 }
-//https://dummyjson.com/products

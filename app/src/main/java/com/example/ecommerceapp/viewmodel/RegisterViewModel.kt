@@ -11,7 +11,12 @@ import com.example.ecommerceapp.model.UserModel
 import com.example.ecommerceapp.util.Resource
 import com.example.ecommerceapp.util.Util
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -20,11 +25,9 @@ import javax.inject.Inject
 
 @HiltViewModel
 class RegisterViewModel @Inject constructor(
-    private val firebaseAuth: FirebaseAuth
+    private val firebaseAuth: FirebaseAuth,
+    private val fireStore: FirebaseFirestore
 ): ViewModel() {
-
-    private val database = FirebaseDatabase.getInstance(Util.DATABASE_URL)
-    private val reference = database.reference
 
     private var _authState = MutableLiveData<Resource<Boolean>>()
     val authState : LiveData<Resource<Boolean>>
@@ -33,6 +36,8 @@ class RegisterViewModel @Inject constructor(
     private var _verification = MutableLiveData<Resource<Boolean>>()
     val verification : LiveData<Resource<Boolean>>
         get() = _verification
+
+    val collectionReference = fireStore.collection("users")
 
     fun signUp(
         firstName: String,
@@ -59,20 +64,18 @@ class RegisterViewModel @Inject constructor(
     )= viewModelScope.launch{
         _authState.value = Resource.loading(null)
         val user = makeUser(userId,"${firstName}_$lastName",email)
-        reference
-            .child("users")
-            .child(userId)
-            .setValue(user)
-            .addOnCompleteListener {
-                if (it.isSuccessful){
-                    verify()
-                    _authState.value = Resource.success(true)
-                }else{
-                    _authState.value = Resource.error(it.exception?.localizedMessage ?: "error : try again",null)
-                }
+
+        collectionReference
+            .document(user.userId.toString())
+            .set(user)
+            .addOnSuccessListener {
+                verify()
+                _authState.value = Resource.success(true)
+            }
+            .addOnFailureListener { e ->
+                _authState.value = Resource.error(e.localizedMessage ?: "error : try again",null)
             }
     }
-
     private fun makeUser(userId : String,userName: String,email: String) : UserModel {
         return UserModel(userId,userName,email)
     }
@@ -92,5 +95,11 @@ class RegisterViewModel @Inject constructor(
         }?.addOnFailureListener{
             _verification.value = Resource.error( it.localizedMessage ?: "error",null)
         }
+    }
+
+
+    private fun saveUserIntoFireStore(userObject: UserModel) {
+
+
     }
 }
